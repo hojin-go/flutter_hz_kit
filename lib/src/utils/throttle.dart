@@ -1,18 +1,49 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 
-import 'package:flutter/material.dart';
+Timer? _timer;
 
-Timer? _interval;
-
-/// 节流，先触发 [fn] 方法然后计时，[time] ms 内，不再触发 [fn] 方法
-throttle(VoidCallback fn, {int time = 600}) {
-  if (_interval?.isActive ?? false) {
-    debugPrint('throttle invalid and will not call');
+/// 节流，先触发 [fn] 方法然后计时，[time]时间 内，不再触发 [fn] 方法
+throttle(
+  VoidCallback fn, {
+  Duration time = const Duration(milliseconds: 500),
+  VoidCallback? onLocked,
+  VoidCallback? onUnlocked,
+  VoidCallback? onIgnored,
+}) {
+  if (_timer?.isActive ?? false) {
+    onIgnored?.call();
     return;
   } else {
     fn();
-    _interval = Timer(Duration(milliseconds: time), () {
-      _interval!.cancel();
+
+    onLocked?.call();
+    _timer = Timer(time, () {
+      _timer!.cancel();
+      _timer = null;
+      onUnlocked?.call();
+    });
+  }
+}
+
+Future? _future;
+
+throttleFuture<T>(
+  Future<T> Function() fn, {
+  VoidCallback? onLocked,
+  VoidCallback? onUnlocked,
+  VoidCallback? onIgnored,
+}) async {
+  if (_future != null) {
+    onIgnored?.call();
+    return;
+  } else {
+    onLocked?.call();
+    _future = fn();
+
+    _future!.whenComplete(() {
+      _future = null;
+      onUnlocked?.call();
     });
   }
 }

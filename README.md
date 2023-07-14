@@ -34,15 +34,50 @@ import 'package:hz_kit/hz_kit.dart';
 `debounce`：某个函数在某段时间内，无论触发了多少次回调，都只执行最后一次
 
 ```dart
-debounce(() {
-  print('debounce');
-}, time: 1000);
+debounce(
+  () {
+    print('function fired');
+  },
+  time: const Duration(milliseconds: 600),
+  onCancel: () {
+    print('Click canceled');
+  },
+);
 ```
 
 `throttle` 节流函数，先触发函数，然后在一定时间内不触发，过了一定时间后再触发
 
 ```dart
-throttle(() {
-  print('throttle');
-}, time: 1000);
+throttle(
+  () {
+    print('function fired');
+  },
+  time: const Duration(seconds: 2),
+  onIgnored: () {
+    print('ignored');
+  },
+  onLocked: () {
+    print('locked');
+  },
+  onUnlocked: () => print('unlocked'),
+);
+```
+
+`throttleFuture` 节流函数变种，在异步函数执行期间不接受下一次调用
+
+```dart
+throttleFuture(
+  () async {
+    print('function fired');
+    await Future.delayed(const Duration(seconds: 2));
+    print('function done');
+  },
+  onIgnored: () {
+    print('ignored');
+  },
+  onLocked: () {
+    print('locked');
+  },
+  onUnlocked: () => print('unlocked'),
+);
 ```
